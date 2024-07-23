@@ -43,7 +43,7 @@ def user_register():
     try:
         body = request.json
         username= body.get("username", None)
-        email= email.get("email", None)
+        email= body.get("email", None)
         password = body.get("password", None)
 
         if username is None or  email is None or password is None:
@@ -69,7 +69,7 @@ def user_register():
         return jsonify ({"error": f"{error}"}), 500
         
 
-@app.route('/character', methods=['GET'])
+@app.route('/characters', methods=['GET'])
 def get_all_characters():
     characters = Character.query.all()
     serialized_characters= [character.serialize() for character in characters]
@@ -129,6 +129,34 @@ def add_planet():
     
     except Exception as error:
         return jsonify({"error": f"{error}"}), 500
+    
+@app.route('/vehicle', methods=["POST"])
+def add_vehicle():
+    body = request.json
+
+    model = body.get("model", None)
+    cost = body.get("cost", None)
+    max_speed = body.get("max_speed", None)
+    crew= body.get("crew", None)
+    passengers= body.get("passengers", None)
+    consumables= body.get("consumables", None)
+    hyperdrive_rating= body.get("hyperdrive_rating", None)
+    
+
+    if model is None or cost is None or max_speed is None or crew is None or passengers is None or consumables is None or hyperdrive_rating is None:
+        return jsonify ({"error": "missing fields"}), 400
+
+    vehicle = Vehicle( model = model, cost = cost, max_speed = max_speed, crew = crew, passengers = passengers, consumables = consumables, hyperdrive_rating = hyperdrive_rating )
+
+    try:
+        db.session.add(vehicle)
+        db.session.commit()
+        db.session.refresh(vehicle)
+
+        return jsonify({"message": f"Vehicle created {vehicle.model}!"}), 201
+    
+    except Exception as error:
+        return jsonify({"error": f"{error}"}), 500
 
 @app.route('/character/<int:id>', methods=['GET'])
 def get_character(id):
@@ -140,7 +168,7 @@ def get_character(id):
     except Exception as error:
         return jsonify({"error": f"{error}"}), 500
 
-@app.route('/planet', methods=['GET'])
+@app.route('/planets', methods=['GET'])
 def get_all_planets():
     planets = Planet.query.all()
     serialized_planets= [planet.serialize() for planet in planets]
@@ -158,7 +186,7 @@ def get_planet(id):
 
 
 
-@app.route('/vehicle', methods=['GET'])
+@app.route('/vehicles', methods=['GET'])
 def get_all_vehicles():
     vehicles = Vehicle.query.all()
     serialized_vehicles= [vehicle.serialize() for vehicle in vehicles]
@@ -174,7 +202,7 @@ def get_vehicle(id):
     except Exception as error:
         return jsonify({"error": f"{error}"}), 500
 
-@app.route('/user', methods=['GET'])
+@app.route('/users', methods=['GET'])
 def get_all_users():   
     users = User.query.all()
     serialized_users= [user.serialize() for user in users]
